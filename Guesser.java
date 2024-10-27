@@ -1,4 +1,5 @@
 import java.io.Console;
+import java.util.*;
 
 /**
  * Assignment 1 - Guessing Game
@@ -65,6 +66,11 @@ public class Guesser{
     // As long as it is not a valid reply (one of "T" and "F")
     // write an error message, and read a new reply.
     // When you have gotten a valid reply, return it.
+    reply = new Scanner(System.in).nextLine();      
+    while (!reply.equals("T") && !reply.equals("F")) {
+      System.out.println("Please answer T or F");
+      reply = new Scanner(System.in).nextLine();
+    }
     return reply;
   }
 
