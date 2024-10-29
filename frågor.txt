@@ -1,0 +1,229 @@
+Jag siktar på VG.
+
+1. Vad är pull respektive push?
+
+    - Pull är ett kommando som används inom Git när man t.ex. är flera som jobbar med ett projekt, 
+    och har ett remote repository som man hämtar ändringar ifrån till sitt lokala repo. Om jag gör
+    en pull från mitt lokala repo så kommer ändringarna från fjärr-repot att hämtas och slås (mergas) ihop
+    med min kodbas.
+
+    - Push är kommandot för när jag vill dela mina egna ändringar med fjärrepot. T.ex. om jag har uppdaterat
+    filer eller lagt till nya och vill att dessa ska delas/sparas i t.ex. ett remote GitHub-repo. Nu kan de som
+    har tillgång till detta repo också komma åt det som jag har pushat.
+    - I bägge fallen är det väldigt viktigt att man (om man är en grupp som jobbar med samma repo) kommunicerar
+    med teamet om vem som gör vad och när, så inte onödiga konflikter mellan versioner av repot/filer uppstår.
+
+2. När använder man log respektive status?
+
+    - Bägge används för att få information om sitt repo och de ändringar som gjorts, men på lite olika sätt!
+
+    - Log används främst för att hålla reda på historiken av commits. Där kan man granska kedjan av commits med deras
+    unika id - som representeras av en hash-kod. Även vem som har gjort dessa commits och när.
+
+    - Status används för att se om filer i ens lokala arbetskatalog eller staging area behöver hanteras. Den håller 
+    främst reda på om det har skapats nya filer som är "otrackade", eller om en fil har ändrats men ännu inte 
+    stagats (commitats), och filer som är redo att stagas (commitas). Om ingenting har ändrats sedan senaste commiten
+    eller om repot är helt nytt så kommer ytan att vara ren. Så fort jag skapar/ändrar en fil så behöver jag hantera den.
+    Innan den har commitats så behöver min ändring passera staging area. Status visar även vilken branch man är på.
+
+3. Vad är en Git branch och varför är de viktiga?
+
+    - En branch är en förgrening av ens repo. Om jag t.ex. initierar ett lokalt repo så finns bara en unik utvecklingslinje - master.
+    Men jag kanske inte vill experimentera med ändringar här, särskilt inte om jag är kopplad till ett remote 
+    repo där andra också delar sina ändringar. Därför finns möjligheten för mig att skapa en förgrening. Alla filer från
+    master finns även i den nya grenen vid tidpunkten för när grenen skapas, och här kan jag göra ändringar utan att 
+    påverka huvudgrenen. När jag känner mig nöjd kan jag sedan välja om jag vill föra över mina ändringar till huvudgrenen. 
+    
+    Man kan säga att det är en verkstad där man får experimentera/utveckla nya funktioner eller möjligheten för många att 
+    arbeta parallellt med ett projekt utan att påverka huvudgrenen. Det gör också att historiken i master blir renare än om 
+    alla skulle testa och eventuellt behöva ångra sina steg, det är bättre att använda sig av en ny branch för detta.
+
+4. Det finns flera sätt att rulla tillbaka koden till ett tidigare tillstånd. Förklara skillnaden och motivera när man 
+skulle använda den ena eller andra metoden. Ge exempel på de kommandon du använder för att göra detta och visa att det 
+fungerar, vilken output du fick från git-kommandona.
+
+    * Ny fil innan stage:
+    - Det enklaste fallet gäller om du har t.ex. skapat en NY fil som ännu inte har stageats eller commitats. Vi skapar hello.txt
+    Terminalen visar då att filen behöver hanteras (add om man vill stagea). Här kan du utan problem bara ta bort filen eller 
+    ändra på den. Tar jag bort den blir arbetskatalogen ren igen. Om jag ändrar på den så finns den som fil att hantera (add för staging).
+
+    * Ny fil i staging:
+    - Nästa fall är om du har stageat denna fil, och vill göra en ändring eller ta bort den. Då kan du köra: 
+    git restore --staged hello.txt för att ta bort från staging area. Därefter är det samma som steg ett ovan. Ett alternativ är
+    att bara ändra i filen, även om den är kvar på stage, göra git add igen på ens ändring. Git kommer då slå ihop dina ändringar
+    eftersom det rör samma fil.
+
+    * Ändring i fil som har commitats:
+    - Om vi har commitat hello.txt och sedan gör en ändring i den (innan den nya ändringen är i stage) Så kör man: git restore hello.txt 
+    Detta kommer återföra filen till hur den var vid senaste commit och i terminalen är arbetskatalogen ren. Detta påverkar ej historiken.
+
+    * Ändring i fil som har commitats i staging:
+    - Om vi lägger ändringen på hello.txt i stage. Så behöver vi göra som tidigare: git restore --staged hello.txt för att ta bort den från
+    stage. arbetskatalogen är inte ren eftersom vi fortfarande behöver hantera ändringen. Om vi kör git restore hello.txt är filen tillbaka
+    till hur den var vid senaste commit. Detta påverkar heller ej historiken.
+
+    * Backa till gammal version av fil (utan att påverka gammal historik):
+    - Om vi har commitat ändringar flera gånger på t.ex. hello.txt. Så kan vi även gå tillbaka till läget för filen i en tidigare commit. T.ex. om jag
+    skapar hello.txt med texten "Hello" och commitar. Nästa commit lägger jag till "World". Tredje commit "Again". Om jag vill gå tillbaka till 
+    ursprungstexten "Hello", så kan jag köra: git restore --source=<hash-kod> hello.txt. Om jag kör git status så finns det en ändring att 
+    hantera. Om jag gör git add hello.txt och sedan commitar så är filen ändrad till läget för den commit som vi valde hash-koden till.
+    Men historiken för de gamla commitsen som vi ville rulla tillbaka är oförändrad. Vår commit där vi rullade tillbaka hamnar som den senaste.
+
+    * Backa till läget vid en gammal commit (utan att påverka gammal historik):
+    - Om vi har gjort flera commits och vill backa till ett äldre tillstånd/commit - utan att påverka historiken så kan vi köra följande:
+    git revert <hash-kod>. Beroende på vad man har för kedja av ändringar kan man behöva hantera några konflikter/ändringar här. Jag får t.ex.
+    hantera en sådan när jag testar att gå tillbaka med hello.txt. Terminalen indikerar även att jag inte är färdig med revert (det står reverting 
+    bredvid min branch). När jag har gjort ändringarna behöver jag därför flytta dem till stage och sedan commita. Nu är revert färdigt och min 
+    revert-commit är den senaste commiten. Den gamla historiken är oförändrad och vi har backat vårt läge till ett tidigare tillstånd.
+
+    * Ta bort från commit till staging (påverkar historiken):
+    - Om du har gjort en ny commit och vill ångra den, genom att endast flytta den tillbaka till staging area. Kör då: git reset --soft HEAD~1.
+    Detta kommer backa HEAD ett steg, och flytta den senaste commiten till staging area. Ändringarna är alltså sparade på arbetskatalogen och på stage.
+    Om vi t.ex. har gjort tre commits på hello.txt som i ovan nämnda exempel, med hello, world och again i de respektive commitsen. Om vi backar ett 
+    steg så blir sista commit med "Again" bortplockad som commit och ligger nu på stage. HEAD flyttas nu ett steg bakåt till commiten med "World"
+    Vi kan välja att re-comitta om vi vill (t.ex. om vi stavade fel). Då hamnar vår commit sist efter den vi rullade tillbaks till. Vi kan också 
+    ta bort ändringen "Again" från staging area med git restore --staged hello.txt. Om vi vill ta bort den från arbetskatalogen också så kör vi ett 
+    sista steg med git restore hello.txt. Nu är ytan ren, vi har backat historiken med ett steg och hello.txt har bara texten "Hello" och "World" i sig.
+
+    * Ta bort commit till arbetskatalogen (påverkar historiken):
+    - Detta exempel liknar det förra, men det går ett steg längre. Den flyttar commiten till arbetskatalogen direkt och går förbi staging. 
+    Om vi i samma exempel ovan med hello.txt har gjort våra tre commits med hello, world, again, respektive. Men att vi råkade skicka med en fil som 
+    inte skulle vara med på sista commiten. Så kör vi git reset HEAD~1. Ändringen ligger nu på arbetsområdet. Om vi vill commita igen måste vi först 
+    göra git add. Om vi istället vill bli av med den kör vi git restore hello.txt. eller eventuellt samma kommando på filen som vi råkade skicka med.
+    Nu är ytan ren, vi har backat historiken med ett steg och hello.txt har bara texten "Hello" och "World" i sig.
+
+    * Ta bort commit helt och hållet (påverkar historiken):
+    - Om vi vill ta bort den senaste committen utan att pausa ändringen på varken stage eller arbetskatalogen så kör vi git reset --hard HEAD~1. Detta 
+    tar bort senaste committen direkt, arbetskatalogen är ren, vi har backat historiken med ett steg och hello.txt har bara texten "Hello" och "World" i sig.
+    
+    * För- och nackdelar med de olika metoderna:
+    - git restore används mest för pågående ändringar som ska rullas tillbaka innan de har blivit commitade. Detta kommando passar därför bäst för sådana 
+    operationer. git restore --source=<hash-kod> <filnamn> kan dock vara ett bra alternativ att endast ändra en fil om man inte vill påverka historiken.
+
+    - git revert är en säker variant för att rulla tillbaka. Man har full kontroll och behöver lösa de ändringar som man önskar. En nackdel skulle kunna
+    vara att historiken blir stökig. Gamla commits har blivit ändrade men finns fortfarande kvar. Å andra sidan kanske vissa upplever att det reflekterar 
+    det verkliga händelseförloppet.
+
+    - git reset --soft är bra för att endast lösa mindre misstag med en commit, som t.ex. stavfel eller liknande.
+    - git reset (--mixed) är bra för att t.ex. ta bort en fil som man av misstag har commitat.
+    - git reset --hard kan vara användbart för irreversibla fel där man måste gå tillbaka till ett äldre tillstånd. Men detta skall användas med stor 
+    försiktighet eftersom man riskerar förlora arbete på detta vis. 
+
+5. Beskriv och jämför hur man kan använda git rebase och git merge i ett scenario där flera utvecklare jobbar 
+på olika feature branches. Diskutera fördelarna och nackdelarna med båda teknikerna, samt hur de påverkar historiken:
+
+    - Varför/när kommer frågan om merge/rebase upp? Om jag jobbar på ett repo som har flera commits i master/main och påbörjar en funktion i en gren. Låt oss 
+    säga att jag är en del i ett team som utvecklar spelet Guesser som vi hade i uppgiften. Innan mig har någon startat repot och börjat fylla på med commits. 
+    T.ex. skapat Guesser och en main-metod, någon annan har skapat ett skript som ska köra programmet. Nu vill jag skapa en branch för att koda en konstruktor, 
+    och kanske en start-metod. Så här ser historiken ut nog om jag kör git log --oneline --all --graph. Detta kommando kommer vara användbart som vi ska se snart.
+
+    * 6576f74 (HEAD -> feature/constructor) Adding a start-method to Guesser.java
+    * 33590a8 Adding a constructor
+    * 12d3208 (master) Creating a script to run the program
+    * 7ad13e7 Creating Main.java
+    * 9d4e5ce Creating Guesser.java
+
+    Just nu pekar HEAD på mina sista commits som ligger högst upp, och master visar vilken commit som min branch baseras på. Här har vi inga problem än. Om jag vill 
+    göra merge från master till min branch, eller rebase från master till branch så kommer det få samma effekt. Mina sista commits kommer hamna där de är nu, men master 
+    kommer flyttas fram till den sista. Inom merging kallar vi detta för fast forward. Jag säger inte att man ska göra rebasing från master, jag ville bara visa att det 
+    inte spelar någon roll för historiken här. Det viktiga kommer om vi har en konflikt mellan de olika grenarna. T.ex. om en kollega har uppdaterat main-metoden, och 
+    jag har skrivit ännu en metod till Guesser:
+
+    * c4e1ae9 (HEAD -> feature/constructor) Adding getReply to Guesser.java
+    | * 70f8b41 (master) Adding code to Main.java
+    |/  
+    * 6576f74 Adding a start-method to Guesser.java
+    * 33590a8 Adding a constructor
+    * 12d3208 Creating a script to run the program
+    * 7ad13e7 Creating Main.java
+    * 9d4e5ce Creating Guesser.java
+
+    Här ser man det fina ned git log --oneline --all --graph. Den visar att vi har en divergens bland grenarna. Om jag kör en merge nu från master så kommer det skapas
+    en ny commit efter de sista (utan att påverka historiken):
+
+    *   364ad59 (HEAD -> master) Merge branch 'feature/constructor'
+    |\  
+    | * c4e1ae9 (feature/constructor) Adding getReply to Guesser.java
+    * | 70f8b41 Adding code to Main.java
+    |/  
+    * 6576f74 Adding a start-method to Guesser.java
+    * 33590a8 Adding a constructor
+    * 12d3208 Creating a script to run the program
+    * 7ad13e7 Creating Main.java
+    * 9d4e5ce Creating Guesser.java
+
+    Om jag istället hade gjort git rebase feature/constructor får vi: 
+
+    * a3ef7c7 (HEAD -> master) Adding code to Main.java
+    * c4e1ae9 (feature/constructor) Adding getReply to Guesser.java
+    * 6576f74 Adding a start-method to Guesser.java
+    * 33590a8 Adding a constructor
+    * 12d3208 Creating a script to run the program
+    * 7ad13e7 Creating Main.java
+    * 9d4e5ce Creating Guesser.java
+
+    Här ser man tydligt att det är en ren kedja av commits, ingen divergens. Men vi ser också att historiken har kastats om, och min commit i main har fått ett 
+    annat id. Detta kan vara väldigt problematiskt om andra i temaet har jobbat på det gamla id-numret och vi försöker pusha vår kod. Det kan uppstå många onödiga 
+    konflikter och förvirring. Därför är det inte rekommenderat att göra rebase i main, även om historiken blir ren så representerar den inte vad som faktiskt har 
+    hänt och försvårar arbetet för andra i teamet. Ett bättre alternativ skulle kunna vara att köra en lokal rebase. Alltså om jag i min feature-branch kör en rebase 
+    mot master. Även om vi har en divergens så kommer bara mina commits byta bas från en tidigare commit till den senaste i master. Först kanske jag får passera 
+    genom några konflikthanteringar, men till slut kan jag köra merge från min feature-branch till master. Det betyder alltså att man kan kombinera de två metoderna.
+    Man behöver inte bara välja en, utan försöka använda fördelarna med bägge. Om vi simulerar en konflikt för att illustrera en lokal konflikt så här:
+
+    * 86a3133 (HEAD -> feature/constructor) Modifying Main.java from branch
+    | * d300347 (master) Modifying Main.java
+    | * a3ef7c7 Adding code to Main.java
+    |/  
+    * c4e1ae9 Adding getReply to Guesser.java
+    * 6576f74 Adding a start-method to Guesser.java
+    * 33590a8 Adding a constructor
+    * 12d3208 Creating a script to run the program
+    * 7ad13e7 Creating Main.java
+    * 9d4e5ce Creating Guesser.java
+
+    Här har vi nu en konflikt i samma fil mellan master och branch. Om jag mergar så kommer en ny commit som tidigare följa efter de senaste commitsen. Först måste vi 
+    självklart lösa konflikter som uppstår, men jag illustrerar detta nedan under rebase istället för att skriva om det i båda. Om vi gör en rebase från branch 
+    (git rebase master):
+
+    Slår ihop Main.java automatiskt
+    KONFLIKT (innehåll): Sammanslagningskonflikt i Main.java
+    fel: kunde inte tillämpa 86a3133... Modifying Main.java from branch
+    tips: Resolve all conflicts manually, mark them as resolved with
+    tips: "git add/rm <conflicted_files>", then run "git rebase --continue".
+    tips: You can instead skip this commit: run "git rebase --skip".
+    tips: To abort and get back to the state before "git rebase", run "git rebase --abort".
+    tips: Disable this message with "git config advice.mergeConflict false"
+    Kunde inte tillämpa 86a3133... Modifying Main.java from branch
+
+    Här talar processen om för oss att git har stoppat rebasingen eftersom vi har en konflikt, nämligen i samma fil (Main.java). Jag måste öppna den/de filer som bråkar
+    och lösa konflikten. Vi har även alternativet att hoppa över en commit (git rebase --skip) eller avbryta vår rebase om vi ångrar oss eller inte hinner gå igenom 
+    alla konflikter (git rebase --abort).
+
+    Om jag löser konflikten, så kan jag fortsätta rebasingen med git rebase --continue. Men först måste jag köra git add och git commit på de nya ändringarna:
+
+    * 325b519 (HEAD -> feature/constructor) Rebasing towards master
+    * d300347 (master) Modifying Main.java
+    * a3ef7c7 Adding code to Main.java
+    * c4e1ae9 Adding getReply to Guesser.java
+    * 6576f74 Adding a start-method to Guesser.java
+    * 33590a8 Adding a constructor
+    * 12d3208 Creating a script to run the program
+    * 7ad13e7 Creating Main.java
+    * 9d4e5ce Creating Guesser.java
+
+    Nu ser man ett det är en ren kedja igen och min senaste commit i branchen har bytt bas till den senaste ändringen i master.
+
+    Ett annat arbetssätt är att ha en feature branch som finns både lokalt och remote. Där kan flera i temaet arbeta på samma gren utan att påverka main/master. 
+    Vi kan använda rebasing här med, men vi ska vara försiktiga med hur vi använder den. Vi kan t.ex. hämta senaste versionen av remote origin main och göra rebase
+    från vår lokala gren till lokala main/master. Därefter kör vi hellre git push --force-with-lease till remote branch än bara --force eftersom den förra ej skriver 
+    över andras arbete. Om vår lokala kopia av main är uppdaterad och inga nya commits har kommit in remote så kommer vår push att lyckas.
+
+    Finns det några mer situationer där rebase är problematiskt? Jag tänker att om vi jobbar på ett stort projekt, och vi utvecklar en viktig funktion. Kanske en 
+    större milstolpe där vi har en version 2.0 av vår produkt. I vissa fall kanske denna är viktig att representera korrekt i historiken. Alltså exakt när den tillkom. 
+    När vi jobbar i mindre team med mindre frågor så kan vi nog oftare utnyttja rebase, dels eftersom det är färre konflikter att hantera och färre personer att hålla 
+    en tydlig kommunikation med. 
+
+    Sammanfattningsvis så har nog olika organisationer olika filosofier, som säkert dels baseras på egen åsikt och dels efter vilka behov arbetsplatsen har. 
+    Mindre företag/organisationer/grupper kanske prioriterar en renare kedja av commits än exakt när något ändrades. Eftersom rebase ändrar historiken kanske 
+    detta saknar stor betydelse för en sådan grupp. Mindre grupper har även lägre risk för att drabbas av konflikter. Men det har inte bara med storleken av enhet, 
+    utan kanske också storleken på projektet. Man får titta i varje situation och se vad som passar bäst. 
